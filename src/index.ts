@@ -5,7 +5,7 @@ import cors = require("cors");
 import { routes } from "./routes";
 import "reflect-metadata";
 import cookieParser = require("cookie-parser");
-import { AppDataSource } from "./data-source";
+import { AppDataSource } from "./db/data-source";
 
 // Create Database connection
 AppDataSource.initialize()
@@ -28,7 +28,7 @@ AppDataSource.initialize()
 		});
 
 		app.listen(process.env.PORT || 3041, () => {
-			console.log("Server listening on port " + process.env.PORT);
+			console.log("Server listening on port: " + process.env.PORT);
 		});
 	})
 	.catch((error) => {

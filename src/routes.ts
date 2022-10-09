@@ -4,8 +4,10 @@ import {
 	Login,
 	Logout,
 	Register,
+	UpdatePassword,
 	UpdateProfile,
 } from "./controller/auth.controller";
+import { CreateUser, GetUser, Users } from "./controller/user.controller";
 import { AuthMiddlware } from "./middleware/auth.middleware";
 
 export const routes = (router: Router) => {
@@ -14,4 +16,8 @@ export const routes = (router: Router) => {
 	router.get("/api/user", AuthMiddlware, AuthenticatedUser);
 	router.post("/api/logout", AuthMiddlware, Logout);
 	router.put("/api/profile/update", AuthMiddlware, UpdateProfile);
+	router.put("/api/password/update", AuthMiddlware, UpdatePassword);
+	router.get("/api/users", AuthMiddlware, Users);
+	router.post("/api/users", AuthMiddlware, CreateUser);
+	router.get("/api/users/:id", AuthMiddlware, GetUser);
 };
