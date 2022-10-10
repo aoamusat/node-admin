@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { User } from "../entity/User";
 import { CreateUserValidation } from "../validation/createuser.validation";
 import { hash } from "bcryptjs";
+import { Repository } from "typeorm";
 
 /**
  * Fetch all users
@@ -14,14 +15,14 @@ import { hash } from "bcryptjs";
 export const Users = async (req: Request, res: Response): Promise<Response> => {
 	const userRepository = AppDataSource.getRepository(User);
 
-	let allUsers: any = await userRepository.find();
+	let AllUsers: any = await userRepository.find({ relations: ["role"] });
 
-	allUsers = allUsers.map((user: { [x: string]: any; password: any }) => {
+	AllUsers = AllUsers.map((user: { [x: string]: any; password: any }) => {
 		const { password, ...u } = user;
 		return u;
 	});
 
-	return res.json(allUsers);
+	return res.json(AllUsers);
 };
 
 /**
@@ -42,6 +43,8 @@ export const CreateUser = async (
 		return res.send(error.details);
 	}
 
+	const { role_id } = req.body;
+
 	const userRepository = AppDataSource.getRepository(User);
 
 	const EmailExists = await userRepository.findOneBy({ email: req.body.email });
@@ -56,6 +59,7 @@ export const CreateUser = async (
 	user.first_name = req.body.first_name;
 	user.last_name = req.body.last_name;
 	user.password = await hash("1234567890", 10);
+	user.role = role_id;
 
 	userRepository.save(user);
 
@@ -79,15 +83,22 @@ export const GetUser = async (
 	req: Request,
 	res: Response
 ): Promise<Response> => {
-	const id = Number(req.params.id);
+	const id = req.params.id;
 
 	const UserRepository = AppDataSource.getRepository(User);
 
-	const user = await UserRepository.findOneBy({ id: id.toString() });
+	const user = await UserRepository.findOne({
+		where: { id: id },
+		relations: {
+			role: true,
+		},
+	});
 
-	const { password, ...u } = user;
-
-	return res.status(200).json(u);
+	if (user) {
+		const { password, ...u } = user;
+		return res.status(200).json(u);
+	}
+	return res.status(404).json({ message: "User not found!" });
 };
 
 /**
@@ -104,9 +115,42 @@ export const UpdateUser = async (
 ): Promise<Response> => {
 	const { id } = req.params;
 
-	const UserRepository = AppDataSource.getRepository(User);
+	const { role_id, ...body } = req.body;
 
-	const user = await UserRepository.update(id, req.body);
+	const UserRepository: Repository<User> = AppDataSource.getRepository(User);
 
-	return res.json(user);
+	await UserRepository.update(id, { ...body, role: { id: role_id } });
+
+	const user: User = await UserRepository.findOneBy({ id: id });
+
+	if (user) {
+		const { password, ...data } = user;
+		return res.status(202).json(data);
+	}
+
+	return res.status(404).json({ message: "User not found" });
+};
+
+/**
+ * Delete a user from the DB
+ *
+ * @param req Request
+ * @param res Response
+ */
+export const DeleteUser = async (
+	req: Request,
+	res: Response
+): Promise<Response> => {
+	const { id } = req.params;
+
+	const UserRepository: Repository<User> = AppDataSource.getRepository(User);
+
+	const user: User = await UserRepository.findOneBy({ id });
+
+	if (user) {
+		await UserRepository.delete({ id });
+		return res.status(204).json({ message: "User deleted successfully!" });
+	}
+
+	return res.status(404).json({ message: "User not found!" });
 };

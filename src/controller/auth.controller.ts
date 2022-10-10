@@ -106,7 +106,7 @@ export const AuthenticatedUser = async (
 	res: Response
 ): Promise<Response> => {
 	const { password, ...user } = req["user"];
-	return res.json({ user: user });
+	return res.json(user);
 };
 
 /**

@@ -24,7 +24,7 @@ AppDataSource.initialize()
 		routes(app);
 
 		app.get("/", (req: express.Request, res: express.Response) => {
-			res.json({ message: "Hello World" });
+			res.json({ message: "Node Admin API" });
 		});
 
 		app.listen(process.env.PORT || 3041, () => {
