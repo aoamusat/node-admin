@@ -7,6 +7,8 @@ import {
 	UpdatePassword,
 	UpdateProfile,
 } from "./controller/auth.controller";
+import { Permissions } from "./controller/permission.controller";
+import { GetRole, Roles } from "./controller/roles.controller";
 import {
 	CreateUser,
 	GetUser,
@@ -26,4 +28,7 @@ export const routes = (router: Router) => {
 	router.post("/api/users", AuthMiddlware, CreateUser);
 	router.put("/api/users/:id", AuthMiddlware, UpdateUser);
 	router.get("/api/users/:id", AuthMiddlware, GetUser);
+	router.get("/api/permissions", AuthMiddlware, Permissions);
+	router.get("/api/roles/:id", AuthMiddlware, GetRole);
+	router.get("/api/roles", AuthMiddlware, Roles);
 };
